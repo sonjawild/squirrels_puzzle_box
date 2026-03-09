@@ -1,10 +1,9 @@
-#### Behavioral type predicts three stages of anthropogenic resource discovery and exploitation in California ground squirrels #####
+#### Behavioral type predicts discovery, prob-lem-solving and task performance in Cali-fornia ground squirrels when exploiting anthropogenic resources  #####
 
 # two notes for better understanding:
  # More disturbed population = CROW
  # Less disturbed population = PARADISE
 
-# The variable 'mobility' in the model is called 'exploration' in the data set
 
 # 1) Data prep ------------------------------------------------------------
 
@@ -44,7 +43,7 @@ names(latency.data.solve)
 # total.arrivals: number of visits to the puzzle box AFTER learning to solve
 # n_observation_opportunities: number of times a focal individual had opportunity to watch another squirrel perform a solve. Opportunity = either if present at the same box at the same time, or focal arrived within 10s of a solve occuring.
 # eigenvector: measure of sociability (eigenvector centrality based on co-feeding)
-# exploration: median number of RFID feeders visited during an experimental day (out of a total of 18 possible) - called 'mobility' in MS
+# mobility: median number of RFID feeders visited during an experimental day (out of a total of 18 possible) - called 'mobility' in MS
 # n_days_net: on how many days with RFID feeders was this squirrel registered
 # log_num_trapped_per_day: log number of trapping events per trapping day (average)
 # any_beh_prop: proportion of trapping events the squirrel showed a fear response (chatter, struggle, call)
@@ -719,5 +718,161 @@ ggarrange(bold.plot,  soc.plot, labels = c("a", "b"), ncol=2)
 
 ggsave("Supplementary Figures/Figure_beh_type_colony.tiff", units="in", width=7, height=3, dpi=300, compression = 'lzw')
 
+
+
+# 9.2) Survival plots -----------------------------------------------------
+
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+common_theme <- theme_classic(base_size = 12) +
+  theme(
+    plot.margin = margin(t = 1, r = 1, b = 1, l = 20),
+    plot.title = element_text(hjust = 0.5) # increase left margin
+  )
+
+# discovery
+hr_table <- tidy(fit_discover, 
+                 exponentiate = TRUE, 
+                 conf.int = TRUE) %>%
+  mutate(
+    term = recode(term,
+                  "tt(mobility)" = "Mobility (time-varying)",
+                  "bold" = "Boldness",
+                  "tt(eigenvector)" = "Sociability (time-varying)",
+                  "tt(age_num)" = "Age [J:A] (time-varying)",
+                  "sex_num" = "Sex [M:F]",
+                  "tt(other_present)" = "Conspecific presence (time-varying)",
+                  "colony_num" = "Population [more:less disturbed]")
+  )
+
+ggplot(hr_table, aes(x = reorder(term, estimate), 
+                     y = estimate,
+                     ymin = conf.low,
+                     ymax = conf.high)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  ylab("Hazard Ratio") +
+  xlab("") +
+  theme_classic(base_size = 11)+
+  ylim(c(0,5))+ common_theme + ggtitle("Latency to discovery")
+
+
+ggsave("Supplementary Figures/Figure_HR_discovery.tiff", units="in", width=5, height=3, dpi=300, compression = 'lzw')
+
+
+# solve
+hr_table <- tidy(fit_solve, 
+                 exponentiate = TRUE, 
+                 conf.int = TRUE) %>%
+  mutate(
+    term = recode(term,
+                  "mobility" = "Mobility",
+                  "bold" = "Boldness",
+                  "eigenvector" = "Sociability",
+                  "ageP" = "Age [J:A]",
+                  "sexM" = "Sex [M:F]",
+                  "log_training_solves" = "Log # training solves",
+                  "n_observation_opportunities" = "Observation opportunities (solving)",
+                  "colony_num" = "Population [more:less disturbed]")
+  )
+ggplot(hr_table, aes(x = reorder(term, estimate), 
+                     y = estimate,
+                     ymin = conf.low,
+                     ymax = conf.high)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  ylab("Hazard Ratio") +
+  xlab("") +
+  theme_classic(base_size = 11)+
+  ylim(c(0,5))+ common_theme+ ggtitle("Latency to problem-solving")
+
+
+ggsave("Supplementary Figures/Figure_HR_solving.tiff", units="in", width=5, height=3, dpi=300, compression = 'lzw')
+
+
+# performance
+
+irr_table <- tidy(fit_success_glm,
+                  conf.int = TRUE,
+                  exponentiate = TRUE) %>%
+  filter(term != "(Intercept)") %>%   # usually remove intercept
+  mutate(
+    term = recode(term,
+                  "mobility" = "Mobility",
+                  "bold" = "Boldness",
+                  "eigenvector" = "Sociability",
+                  "ageP" = "Age [J:A]",
+                  "sexM" = "Sex [M:F]",
+                  "colony_num" = "Population [more:less disturbed]")
+  )
+
+ggplot(irr_table,
+       aes(x = reorder(term, estimate),
+           y = estimate,
+           ymin = conf.low,
+           ymax = conf.high)) +
+
+    geom_pointrange() +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  scale_y_log10() +   # strongly recommended for rate ratios
+  ylab("Incidence Rate Ratio") +
+  xlab("") +
+  theme_classic()+
+  ylim(c(0,5))+ common_theme+
+  ggtitle("Task performance")
+
+ggsave("Supplementary Figures/Figure_IRR_performance.tiff", units="in", width=5, height=3, dpi=300, compression = 'lzw')
+
+
+
+# 9.3) Social network -----------------------------------------------------
+
+load("Data/Crow.discovery.net.RData")
+
+library(igraph)
+Crow.discovery.net$net
+
+
+g.net.Crow <- graph_from_adjacency_matrix(
+  Crow.discovery.net$net,
+  mode = "undirected",
+  weighted = TRUE,
+  diag = FALSE
+)
+
+ev <- eigen_centrality(g.net.Crow, weights = E(g.net.Crow)$weight)$vector
+
+# Rescale node size for visibility
+node_size <- scales::rescale(ev, to = c(5, 20))
+
+edge_width <- scales::rescale(E(g.net.Crow)$weight, to = c(0.5, 5))
+
+#  Fruchterman-Reingold layout
+lay <- layout_with_fr(g.net.Crow)
+
+tiff("Supplementary Figures/Soc net.tiff",
+     width = 5,
+     height = 5,
+     units = "in",
+     res = 600,
+     compression = "lzw")
+
+# Plot
+plot(
+  g.net.Crow,
+  layout = lay,
+  vertex.size = node_size,
+  vertex.label = NA,          # remove labels
+  edge.width = edge_width,
+  vertex.color = "#e1a136",
+  edge.color = "grey40"
+)
+
+dev.off()
 
 
