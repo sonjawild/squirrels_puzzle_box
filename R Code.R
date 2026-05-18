@@ -221,6 +221,37 @@ cor(latency.data.discovery %>%
 # other_present 0.10492018  0.06241689  0.13524148 0.02806675 -0.04809861    1.00000000  0.20731879
 # colony_num    0.04829580  0.06280325  0.31710518 0.01972676 -0.02471211    0.20731879  1.00000000
 
+# population differences in 
+
+# boldness
+fit.bold <- aov(bold ~ colony, data = latency.data.discovery)
+
+summary(fit.bold)
+
+# Df Sum Sq Mean Sq F value  Pr(>F)   
+# colony       1   9.15   9.151   10.06 0.00207 **
+#   Residuals   90  81.85   0.909                   
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# sociability
+fit.soc <- aov(eigenvector ~ colony, data = latency.data.discovery)
+
+summary(fit.soc)
+# Df Sum Sq Mean Sq F value Pr(>F)
+# colony       1   0.36  0.3589   0.356  0.552
+# Residuals   90  90.64  1.0071 
+
+# mobility
+fit.mob <- aov(mobility ~ colony, data = latency.data.discovery)
+
+summary(fit.mob)
+# Df Sum Sq Mean Sq F value Pr(>F)
+# colony       1   0.21  0.2123    0.21  0.648
+# Residuals   90  90.79  1.0088
+
+
+
 
 # 3) Latency - discovery --------------------------------------------------
 
