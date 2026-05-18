@@ -4,7 +4,7 @@
 Analysis, tables and supplementary figure can be fully reproduced with the available code. 
 
 ## Data
-### Crow.latency.data.discovery & Paradise.latency.data.discovery: 
+### latency.data.discovery: 
 Data detailing latency to discovery of the resource in the two populations (more disturbed = Crow, less disturbed = Paradise)
 - id: PIT tag identifier
 - timestamp: Time and date of discovery (NA if never discovered)
@@ -13,7 +13,7 @@ Data detailing latency to discovery of the resource in the two populations (more
 - t_end: time at the end of the experiment
 - other_present: 1 if another squirrel was present at the same box at time of discovery (or had departed within the 10s before), 0 i no conspecific present
 - eigenvector: eigenvector centrlaity based on co-feeding networks at RFID feeders
-- exploration: average number of antenna visited during social network mapping days (called 'mobility' in MS)
+- mobility: average number of antenna visited during social network mapping days (called 'mobility' in MS)
 - n_days_net: # of network days during which the squirrel was registered (not used)
 - log_num_trapped_per_day: the log of the average trapping numbers per trapping day (part of boldness calculation)
 - any_beh_prop: proportion of trapping events during which squirrel showed fear responses (part of boldness calculation)
@@ -23,7 +23,7 @@ Data detailing latency to discovery of the resource in the two populations (more
 - prop_days_trapped: proportion of days a squirrel was trapped during trapping efforts (not used)
 - bold: boldness score from PCA
 
-### Crow.latency.data.solve & Paradise.latency.data.solve: 
+### latency.data.solve: 
 Data detailing latency to solve of the tax in the two populations (more disturbed = Crow, less disturbed = Paradise)
 - id: PIT tag identifier
 - timestamp: Time and date of third solve (NA if never discovered)
@@ -31,11 +31,12 @@ Data detailing latency to solve of the tax in the two populations (more disturbe
 - t_end: time at the end of the experiment
 - training.solves: # of solves during the training phase (when additional peanut butter was supplied on levers). Serves as a proxy for exposure during training and opportunities for tria-and-error learning.
 - solve.rate: # of solves after the third solves divided by the number of arrivals to the box
+- solve.rate.day: # solves after the third solve divided by the number of unique days discovered at the puzzle box
 - total.solves: # of solves after the third solve until the end of the experiment
 - total.arrivals: # of arrivals to the box after the third solve (used to calculate solving rate)
 - n_observation_opportunities: # of observations of another squirrel performing a solve. Considered to have had opportunity if a solve occurred within 10s of arrival or while the focal was already present at the box
 - eigenvector: eigenvector centrlaity based on co-feeding networks at RFID feeders
-- exploration: average number of antenna visited during social network mapping days (called 'mobility' in MS)
+- mobility: average number of antenna visited during social network mapping days (called 'mobility' in MS)
 - n_days_net: # of network days during which the squirrel was registered (not used)
 - log_num_trapped_per_day: the log of the average trapping numbers per trapping day (part of boldness calculation)
 - any_beh_prop: proportion of trapping events during which squirrel showed fear responses (part of boldness calculation)
