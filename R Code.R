@@ -1,8 +1,8 @@
-#### Behavioral type predicts discovery, prob-lem-solving and task performance in Cali-fornia ground squirrels when exploiting anthropogenic resources  #####
+#### Behavioral type predicts discovery, prob-lem-solving and task performance in California ground squirrels when exploiting anthropogenic resources  #####
 
 # two notes for better understanding:
- # More disturbed population = CROW
- # Less disturbed population = PARADISE
+ # recreational-use population = CROW
+ # trail-use population = PARADISE
 
 
 # 1) Data prep ------------------------------------------------------------
