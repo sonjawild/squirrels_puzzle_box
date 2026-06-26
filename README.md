@@ -1,4 +1,4 @@
-# Code and Data accompanying 'Behavioral type predicts three stages of anthropogenic resource discovery and exploitation in California ground squirrels'
+# Code and Data accompanying 'Behavioural type drives discovery and exploitation of anthropogenic resources '
 
 ## R Code
 Analysis, tables and supplementary figure can be fully reproduced with the available code. 
