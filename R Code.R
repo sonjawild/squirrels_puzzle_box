@@ -1,4 +1,4 @@
-#### Behavioral type predicts discovery, prob-lem-solving and task performance in California ground squirrels when exploiting anthropogenic resources  #####
+#### Behavioural type drives discovery and exploitation of anthropogenic resources   #####
 
 # two notes for better understanding:
  # recreational-use population = CROW
@@ -53,6 +53,18 @@ names(latency.data.solve)
 # prop_days_trapped: proportion of trapping days the squirrel was trapped
 # bold: boldness score (from PCA on trappability and fear responses in trap)
 
+# two squirrels were discovered in both populations - we will filter them for the latency to discovery and only include them in the population where they first approached the puzzle box.
+
+latency.data.discovery[latency.data.discovery$id %in% c("DF62BE1", "DF62BEA"),]
+
+
+latency.data.discovery <- latency.data.discovery %>%
+  filter(
+    !(id %in% c("DF62BE1", "DF62BEA")) |
+      timestamp == ave(timestamp, id, FUN = min)
+  )
+
+# since neither of them learned to solve, they will be removed from the latency to solve data frame and the solving performance (further down)
 
 # 1b) Calculate boldness --------------------------------------------------
 
@@ -207,50 +219,54 @@ vif.discovery <- lm(time ~ mobility + bold + eigenvector + age_num + sex_num + o
 vif(vif.discovery)
 
 # mobility          bold   eigenvector       age_num       sex_num other_present    colony_num 
-# 2.038491      1.103433      2.045622      1.028957      1.021955      1.047715      1.111295
+# 2.242059      1.168228      2.234155      1.050802      1.011890      1.060851      1.142873 
 
 cor(latency.data.discovery %>%
       dplyr::select(mobility, eigenvector, bold, age_num, sex_num, other_present, colony_num))
 
 #                 mobility eigenvector        bold    age_num     sex_num other_present  colony_num
-# mobility      1.00000000  0.72823836  0.20566795 0.09179018  0.02643648    0.10492018  0.04829580
-# eigenvector   0.72823836  1.00000000  0.14128935 0.16846391  0.04315227    0.06241689  0.06280325
-# bold          0.20566795  0.14128935  1.00000000 0.07944433 -0.06077849    0.13524148  0.31710518
-# age_num       0.09179018  0.16846391  0.07944433 1.00000000  0.02866440    0.02806675  0.01972676
-# sex_num       0.02643648  0.04315227 -0.06077849 0.02866440  1.00000000   -0.04809861 -0.02471211
-# other_present 0.10492018  0.06241689  0.13524148 0.02806675 -0.04809861    1.00000000  0.20731879
-# colony_num    0.04829580  0.06280325  0.31710518 0.01972676 -0.02471211    0.20731879  1.00000000
+# mobility      1.00000000  0.73240647  0.20433955 0.09104829  0.01907763    0.10155635  0.05223154
+# eigenvector   0.73240647  1.00000000  0.13205760 0.18592347  0.03731428    0.05959781  0.05079948
+# bold          0.20433955  0.13205760  1.00000000 0.09967622 -0.07509024    0.12999789  0.30784476
+# age_num       0.09104829  0.18592347  0.09967622 1.00000000  0.03637069    0.03207140  0.04685987
+# sex_num       0.01907763  0.03731428 -0.07509024 0.03637069  1.00000000   -0.05655221 -0.02990206
+# other_present 0.10155635  0.05959781  0.12999789 0.03207140 -0.05655221    1.00000000  0.20796365
+# colony_num    0.05223154  0.05079948  0.30784476 0.04685987 -0.02990206    0.20796365  1.00000000
 
 # population differences in 
 
 # boldness
-fit.bold <- aov(bold ~ colony, data = latency.data.discovery)
+fit.bold <- wilcox.test(bold ~ colony, data = latency.data.discovery)
 
 summary(fit.bold)
 
-# Df Sum Sq Mean Sq F value  Pr(>F)   
-# colony       1   9.15   9.151   10.06 0.00207 **
-#   Residuals   90  81.85   0.909                   
-# ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# Wilcoxon rank sum test with continuity correction
+# 
+# data:  bold by colony
+# W = 1276, p-value = 0.006941
+# alternative hypothesis: true location shift is not equal to 0
 
 # sociability
-fit.soc <- aov(eigenvector ~ colony, data = latency.data.discovery)
+# since it is right skewed, we use a Mann Whitney U test
+fit.soc <- wilcox.test(eigenvector ~ colony, data = latency.data.discovery)
 
-summary(fit.soc)
-# Df Sum Sq Mean Sq F value Pr(>F)
-# colony       1   0.36  0.3589   0.356  0.552
-# Residuals   90  90.64  1.0071 
+# Wilcoxon rank sum test with continuity correction
+# 
+# data:  eigenvector by colony
+# W = 1060, p-value = 0.3619
+# alternative hypothesis: true location shift is not equal to 0
 
 # mobility
-fit.mob <- aov(mobility ~ colony, data = latency.data.discovery)
+fit.mob <- wilcox.test(mobility ~ colony, data = latency.data.discovery)
 
-summary(fit.mob)
-# Df Sum Sq Mean Sq F value Pr(>F)
-# colony       1   0.21  0.2123    0.21  0.648
-# Residuals   90  90.79  1.0088
+fit.mob
 
 
+# Wilcoxon rank sum test with continuity correction
+# 
+# data:  mobility by colony
+# W = 1125, p-value = 0.1452
+# alternative hypothesis: true location shift is not equal to 0
 
 
 # 3) Latency - discovery --------------------------------------------------
@@ -273,14 +289,14 @@ fit_discover <- coxph(surv ~ mobility + bold + eigenvector + age_num + sex_num +
 
 cox.zph(fit_discover)
 # chisq df       p
-# mobility       5.2919  1 0.02142
-# bold           0.3937  1 0.53034
-# eigenvector    5.0045  1 0.02528
-# age_num        8.7349  1 0.00312
-# sex_num        0.1075  1 0.74297
-# other_present  8.7929  1 0.00302
-# colony_num     0.0653  1 0.79825
-# GLOBAL        25.5240  7 0.00061
+# mobility       5.240  1 0.02207
+# bold           0.201  1 0.65383
+# eigenvector    5.398  1 0.02016
+# age_num        8.580  1 0.00340
+# sex_num        0.328  1 0.56663
+# other_present  8.990  1 0.00271
+# colony_num     0.139  1 0.70963
+# GLOBAL        26.055  7 0.00049
 
 
 
@@ -291,38 +307,38 @@ fit_discover <- coxph(surv ~ tt(mobility) + bold + tt(eigenvector) + tt(age_num)
 
 summary(fit_discover)
 
-
 # Call:
 #   coxph(formula = surv ~ tt(mobility) + bold + tt(eigenvector) + 
 #           tt(age_num) + sex_num + tt(other_present) + colony_num, data = latency.data.discovery, 
 #         tt = function(x, t, ...) x * log(t))
 # 
-# n= 92, number of events= 74 
+# n= 90, number of events= 72 
 # 
-# coef exp(coef) se(coef)      z Pr(>|z|)   
-# tt(mobility)       0.07120   1.07379  0.08732  0.815  0.41486   
-# bold               0.40819   1.50409  0.15150  2.694  0.00705 **
-#   tt(eigenvector)   -0.01788   0.98228  0.07902 -0.226  0.82102   
-# tt(age_num)       -0.09811   0.90655  0.09691 -1.012  0.31136   
-# sex_num           -0.53604   0.58506  0.24911 -2.152  0.03142 * 
-#   tt(other_present)  0.19965   1.22098  0.12538  1.592  0.11130   
-# colony_num         0.97847   2.66037  0.30078  3.253  0.00114 **
+# coef exp(coef)  se(coef)      z Pr(>|z|)   
+# tt(mobility)       0.059096  1.060878  0.090538  0.653  0.51393   
+# bold               0.404273  1.498213  0.153158  2.640  0.00830 **
+#   tt(eigenvector)   -0.007605  0.992424  0.082101 -0.093  0.92620   
+# tt(age_num)       -0.115465  0.890952  0.101042 -1.143  0.25314   
+# sex_num           -0.539474  0.583055  0.251451 -2.145  0.03192 * 
+#   tt(other_present)  0.191835  1.211471  0.126370  1.518  0.12900   
+# colony_num         0.969696  2.637142  0.302234  3.208  0.00133 **
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 # 
 # exp(coef) exp(-coef) lower .95 upper .95
-# tt(mobility)         1.0738     0.9313    0.9049    1.2742
-# bold                 1.5041     0.6649    1.1177    2.0241
-# tt(eigenvector)      0.9823     1.0180    0.8413    1.1468
-# tt(age_num)          0.9066     1.1031    0.7497    1.0962
-# sex_num              0.5851     1.7092    0.3591    0.9533
-# tt(other_present)    1.2210     0.8190    0.9550    1.5611
-# colony_num           2.6604     0.3759    1.4754    4.7970
+# tt(mobility)         1.0609     0.9426    0.8884    1.2669
+# bold                 1.4982     0.6675    1.1097    2.0227
+# tt(eigenvector)      0.9924     1.0076    0.8449    1.1657
+# tt(age_num)          0.8910     1.1224    0.7309    1.0861
+# sex_num              0.5831     1.7151    0.3562    0.9544
+# tt(other_present)    1.2115     0.8254    0.9457    1.5520
+# colony_num           2.6371     0.3792    1.4584    4.7686
 # 
-# Concordance= 0.706  (se = 0.036 )
-# Likelihood ratio test= 37.47  on 7 df,   p=4e-06
-# Wald test            = 35.5  on 7 df,   p=9e-06
-# Score (logrank) test = 38.94  on 7 df,   p=2e-06
+# Concordance= 0.707  (se = 0.036 )
+# Likelihood ratio test= 36.07  on 7 df,   p=7e-06
+# Wald test            = 34.27  on 7 df,   p=2e-05
+# Score (logrank) test = 37.46  on 7 df,   p=4e-06
+
 
 
 
@@ -775,7 +791,7 @@ hr_table <- tidy(fit_discover,
                   "tt(age_num)" = "Age [J:A] (time-varying)",
                   "sex_num" = "Sex [M:F]",
                   "tt(other_present)" = "Conspecific presence (time-varying)",
-                  "colony_num" = "Population [more:less disturbed]")
+                  "colony_num" = "Population [recreational:trail]")
   )
 
 ggplot(hr_table, aes(x = reorder(term, estimate), 
@@ -807,7 +823,7 @@ hr_table <- tidy(fit_solve,
                   "sexM" = "Sex [M:F]",
                   "log_training_solves" = "Log # training solves",
                   "n_observation_opportunities" = "Observation opportunities (solving)",
-                  "colony_num" = "Population [more:less disturbed]")
+                  "colony_num" = "Population [recreational:trail]")
   )
 ggplot(hr_table, aes(x = reorder(term, estimate), 
                      y = estimate,
@@ -838,7 +854,7 @@ irr_table <- tidy(fit_success_glm,
                   "eigenvector" = "Sociability",
                   "ageP" = "Age [J:A]",
                   "sexM" = "Sex [M:F]",
-                  "colony_num" = "Population [more:less disturbed]")
+                  "colony_num" = "Population [recreational:trail]")
   )
 
 ggplot(irr_table,
