@@ -1,4 +1,4 @@
-#### Behavioural type drives discovery and exploitation of anthropogenic resources   #####
+#### Behavioural type drives discovery and exploitation of a novel foraging task   #####
 
 # two notes for better understanding:
  # recreational-use population = CROW
