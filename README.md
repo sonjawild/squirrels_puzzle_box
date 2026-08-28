@@ -1,4 +1,4 @@
-# Code and Data accompanying 'Behavioural type drives discovery and exploitation of anthropogenic resources '
+# Code and Data accompanying 'Behavioural type drives discovery and exploitation of a novel foraging task'
 
 ## R Code
 Analysis, tables and supplementary figure can be fully reproduced with the available code. 
